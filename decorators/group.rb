@@ -10,5 +10,13 @@ module Decorators
         routes: object.routes.count
       }
     end
+
+    def to_json
+      return {
+        id: object.id.to_s,
+        slug: object.slug,
+        rights: Decorators::Right.decorate_collection(object.rights).map(&:to_h)
+      }.to_json
+    end
   end
 end

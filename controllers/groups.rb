@@ -7,6 +7,15 @@ module Controllers
       halt 200, {count: Arkaan::Permissions::Group.count, items: groups.map(&:to_h)}.to_json
     end
 
+    declare_route 'get', '/:id' do
+      group = Arkaan::Permissions::Group.where(id: params['id']).first
+      if group.nil?
+        halt 404, {message: 'group_not_found'}.to_json
+      else
+        halt 200, Decorators::Group.new(group).to_json
+      end
+    end
+
     declare_route 'post', '/' do
       check_presence 'slug'
       group = Arkaan::Permissions::Group.new(slug: params['slug'])

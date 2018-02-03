@@ -23,7 +23,7 @@ RSpec.describe Controllers::Groups do
   describe 'GET /' do
     describe 'nominal case' do
       before do
-          get '/', {app_key: 'test_key', token: 'test_token'}
+        get '/', {app_key: 'test_key', token: 'test_token'}
       end
       it 'Returns a OK (200) status code when querying for the list of groups' do
         expect(last_response.status).to be 200
@@ -67,6 +67,84 @@ RSpec.describe Controllers::Groups do
       end
     end
     describe 'not_found errors' do
+      describe 'application not found' do
+        before do
+          get '/', {token: 'test_token', app_key: 'another_key'}
+        end
+        it 'Raises a not found (404) error when the key doesn\'t belong to any application' do
+          expect(last_response.status).to be 404
+        end
+        it 'returns the correct body when the gateway doesn\'t exist' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'application_not_found'})
+        end
+      end
+      describe 'gateway not found' do
+        before do
+          get '/', {token: 'other_token', app_key: 'test_key'}
+        end
+        it 'Raises a not found (404) error when the gateway does\'nt exist' do
+          expect(last_response.status).to be 404
+        end
+        it 'returns the correct body when the gateway doesn\'t exist' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'gateway_not_found'})
+        end
+      end
+    end
+  end
+  describe 'GET /:id' do
+    describe 'nominal case' do
+      before do
+        get "/#{group.id}", {app_key: 'test_key', token: 'test_token'}
+      end
+      it 'Returns a OK (200) status code when querying for the list of groups' do
+        expect(last_response.status).to be 200
+      end
+      it 'returns the correct body for the list of groups' do
+        expect(JSON.parse(last_response.body)).to eq({
+          'id' => group.id.to_s,
+          'slug' => 'test_group',
+          'rights' => [
+            {'id' => right.id.to_s, 'slug' => 'test_right'}
+          ],
+        })
+      end
+    end
+    describe 'bad request errors' do
+      describe 'no token error' do
+        before do
+          get '/', {app_key: 'test_key'}
+        end
+        it 'Raises a bad request (400) error when the parameters don\'t contain the token of the gateway' do
+          expect(last_response.status).to be 400
+        end
+        it 'returns the correct response if the parameters do not contain a gateway token' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'bad_request'})
+        end
+      end
+      describe 'no application key error' do
+        before do
+          get '/', {token: 'test_token'}
+        end
+        it 'Raises a bad request (400) error when the parameters don\'t contain the application key' do
+          expect(last_response.status).to be 400
+        end
+        it 'returns the correct response if the parameters do not contain a application key' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'bad_request'})
+        end
+      end
+    end
+    describe 'not_found errors' do
+      describe 'group not found' do
+        before do
+          get '/anything_but_existing_group', {app_key: 'test_key', token: 'test_token'}
+        end
+        it 'Raises a not found (404) error when the group does not exist' do
+          expect(last_response.status).to be 404
+        end
+        it 'returns the correct body when the group doesn\'t exist' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'group_not_found'})
+        end
+      end
       describe 'application not found' do
         before do
           get '/', {token: 'test_token', app_key: 'another_key'}
