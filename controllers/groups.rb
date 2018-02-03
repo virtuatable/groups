@@ -2,13 +2,18 @@ module Controllers
   # Controller for the rights, mapped on /rights
   # @author Vincent Courtois <courtois.vincent@outlook.com>
   class Groups < Arkaan::Utils::Controller
+    declare_route 'get', '/' do
+      groups = Decorators::Group.decorate_collection(Arkaan::Permissions::Group.all)
+      halt 200, {count: Arkaan::Permissions::Group.count, items: groups.map(&:to_h)}.to_json
+    end
+
     declare_route 'post', '/' do
       check_presence 'slug'
-      category = Arkaan::Permissions::Group.new(slug: params['slug'])
-      if category.save
+      group = Arkaan::Permissions::Group.new(slug: params['slug'])
+      if group.save
         halt 201, {message: 'created'}.to_json
       else
-        halt 422, {errors: category.errors.messages.values.flatten}.to_json
+        halt 422, {errors: group.errors.messages.values.flatten}.to_json
       end
     end
 
