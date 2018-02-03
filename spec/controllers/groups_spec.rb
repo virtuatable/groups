@@ -35,10 +35,8 @@ RSpec.describe Controllers::Groups do
             {
               'id' => group.id.to_s,
               'slug' => 'test_group',
-              'rights' => {
-                'count' => 1,
-                'items' => [{'id' => right.id.to_s, 'slug' => 'test_right'}]
-              }
+              'rights' => 1,
+              'routes' => 0
             }
           ]
         })
