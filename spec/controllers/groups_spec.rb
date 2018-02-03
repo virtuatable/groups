@@ -103,9 +103,7 @@ RSpec.describe Controllers::Groups do
         expect(JSON.parse(last_response.body)).to eq({
           'id' => group.id.to_s,
           'slug' => 'test_group',
-          'rights' => [
-            {'id' => right.id.to_s, 'slug' => 'test_right'}
-          ],
+          'rights' => [right.id.to_s],
         })
       end
     end

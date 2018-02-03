@@ -15,7 +15,7 @@ module Decorators
       return {
         id: object.id.to_s,
         slug: object.slug,
-        rights: Decorators::Right.decorate_collection(object.rights).map(&:to_h)
+        rights: object.rights.map(&:id).map(&:to_s)
       }.to_json
     end
   end
