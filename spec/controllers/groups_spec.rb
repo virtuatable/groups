@@ -104,6 +104,7 @@ RSpec.describe Controllers::Groups do
           'id' => group.id.to_s,
           'slug' => 'test_group',
           'rights' => [right.id.to_s],
+          'routes' => []
         })
       end
     end

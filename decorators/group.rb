@@ -15,7 +15,8 @@ module Decorators
       return {
         id: object.id.to_s,
         slug: object.slug,
-        rights: object.rights.map(&:id).map(&:to_s)
+        rights: object.rights.map(&:id).map(&:to_s),
+        routes: object.routes.map(&:id).map(&:to_s)
       }.to_json
     end
   end
