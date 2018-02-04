@@ -41,6 +41,21 @@ module Controllers
       end
     end
 
+    declare_route 'patch', '/:id/routes' do
+      group = Arkaan::Permissions::Group.where(id: params['id']).first
+      if group.nil?
+        halt 404, {message: 'group_not_found'}.to_json
+      else
+        check_items(Arkaan::Monitoring::Route, 'route')
+        group.routes = []
+        params['routes'].each do |route_id|
+          group.routes << Arkaan::Monitoring::Route.where(id: route_id).first
+        end
+        group.save
+        halt 200, {message: 'updated'}.to_json
+      end
+    end
+
     def check_items(klass, singular)
       return if params["#{singular}s"].nil? || params["#{singular}s"].empty?
       params["#{singular}s"].each do |item|

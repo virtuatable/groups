@@ -364,4 +364,116 @@ RSpec.describe Controllers::Groups do
       end
     end
   end
+  describe 'PATCH /:id/routes' do
+    let!(:route) { create(:route) }
+    describe 'nominal case' do
+      let!(:other_group) { create(:group, slug: 'other_slug_group') }
+      before do
+        patch "/#{other_group.id.to_s}/routes", {token: 'test_token', app_key: 'test_key', routes: [route.id.to_s]}
+      end
+      it 'Returns a OK (200) response code if the route has successfully been appended to the group' do
+        expect(last_response.status).to be 200
+      end
+      it 'returns the correct body if the route has successfully been appended' do
+        expect(JSON.parse(last_response.body)).to eq({'message' => 'updated'})
+      end
+      it 'has linked one route to the group' do
+        expect(other_group.reload.routes.count).to be 1
+      end
+      it 'has linked the right route to the group' do
+        expect(other_group.reload.routes.first.path).to eq '/route'
+      end
+      describe 'overwriting the rights in a group' do
+        before do
+          patch "/#{other_group.id.to_s}/routes", {token: 'test_token', app_key: 'test_key', routes: [route.id.to_s]}
+        end
+        it 'Returns a OK (200) response code when overwriting the rights' do
+          expect(last_response.status).to be 200
+        end
+        it 'returns the correct body when overwriting the rights' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'updated'})
+        end
+        it 'has overwritten the routes associated to the group' do
+          expect(other_group.reload.routes.count).to be 1
+        end
+        it 'has changed the route attached to this group' do
+          expect(other_group.reload.routes.first.path).to eq '/route'
+        end
+      end
+    end
+    describe 'bad request errors' do
+      describe 'no token error' do
+        before do
+          patch "/#{group.id.to_s}/routes", {app_key: 'test_key'}.to_json
+        end
+        it 'Raises a bad request (400) error when the parameters don\'t contain the token of the gateway' do
+          expect(last_response.status).to be 400
+        end
+        it 'returns the correct response if the parameters do not contain a gateway token' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'bad_request'})
+        end
+      end
+      describe 'no application key error' do
+        before do
+          patch "/#{group.id.to_s}/routes", {token: 'test_token'}.to_json
+        end
+        it 'Raises a bad request (400) error when the parameters don\'t contain the application key' do
+          expect(last_response.status).to be 400
+        end
+        it 'returns the correct response if the parameters do not contain a application key' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'bad_request'})
+        end
+      end
+    end
+    describe 'not_found errors' do
+      describe 'group not found' do
+        before do
+          patch "/any_unknown_group/routes", {token: 'test_token', app_key: 'test_key', routes: []}
+        end
+        it 'Raises a not found (404) error when the group does not exist' do
+          expect(last_response.status).to be 404
+        end
+        it 'returns the correct body if the group does not exist' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'group_not_found'})
+        end
+      end
+      describe 'one of the routes has not been found' do
+        let!(:other_group) { create(:group, slug: 'other_slug_group') }
+        before do
+          patch "/#{other_group.id.to_s}/routes", {token: 'test_token', app_key: 'test_key', routes: [route.id.to_s, 'any_other_route']}
+        end
+        it 'Raises a not found (404) error when a route unique identifier is not found' do
+          expect(last_response.status).to be 404
+        end
+        it 'returns the correct body if a route is not found' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'route_not_found', 'id' => 'any_other_route'})
+        end
+        it 'has not associated a route with the given group' do
+          expect(other_group.routes.count).to be 0
+        end
+      end
+      describe 'application not found' do
+        before do
+          patch "/#{group.id.to_s}/routes", {token: 'test_token', app_key: 'another_key'}.to_json
+        end
+        it 'Raises a not found (404) error when the key doesn\'t belong to any application' do
+          expect(last_response.status).to be 404
+        end
+        it 'returns the correct body when the gateway doesn\'t exist' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'application_not_found'})
+        end
+      end
+      describe 'gateway not found' do
+        before do
+          patch "/#{group.id.to_s}/routes", {token: 'other_token', app_key: 'test_key'}.to_json
+        end
+        it 'Raises a not found (404) error when the gateway does\'nt exist' do
+          expect(last_response.status).to be 404
+        end
+        it 'returns the correct body when the gateway doesn\'t exist' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'gateway_not_found'})
+        end
+      end
+    end
+  end
 end
