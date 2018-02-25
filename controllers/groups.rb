@@ -10,15 +10,7 @@ module Controllers
       end
     end
 
-    declare_route 'get', '/' do
-      groups = Decorators::Group.decorate_collection(Arkaan::Permissions::Group.all)
-      halt 200, {count: Arkaan::Permissions::Group.count, items: groups.map(&:to_h)}.to_json
-    end
-
-    declare_route 'get', '/:id' do
-      halt 200, Decorators::Group.new(@group).to_json
-    end
-
+    # @see https://github.com/jdr-tools/groups/wiki/Creating-a-group
     declare_route 'post', '/' do
       check_presence 'slug'
       group = Arkaan::Permissions::Group.new(slug: params['slug'])
@@ -29,6 +21,24 @@ module Controllers
       end
     end
 
+    # @see https://github.com/jdr-tools/groups/wiki/Deleting-a-group
+    declare_route 'delete', '/:id' do
+      @group.delete
+      halt 200, {message: 'deleted'}.to_json
+    end
+
+    # @see https://github.com/jdr-tools/groups/wiki/Getting-the-list-of-groups
+    declare_route 'get', '/' do
+      groups = Decorators::Group.decorate_collection(Arkaan::Permissions::Group.all)
+      halt 200, {count: Arkaan::Permissions::Group.count, items: groups.map(&:to_h)}.to_json
+    end
+
+    # @see https://github.com/jdr-tools/groups/wiki/Obtaining-informations-about-a-group
+    declare_route 'get', '/:id' do
+      halt 200, Decorators::Group.new(@group).to_json
+    end
+
+    # @see https://github.com/jdr-tools/groups/wiki/Updating-the-rights-of-a-group
     declare_route 'patch', '/:id/rights' do
       check_items(Arkaan::Permissions::Right, 'right')
       @group.rights = []
@@ -39,6 +49,7 @@ module Controllers
       halt 200, {message: 'updated'}.to_json
     end
 
+    # @see https://github.com/jdr-tools/groups/wiki/Updating-the-routes-of-a-group
     declare_route 'patch', '/:id/routes' do
       check_items(Arkaan::Monitoring::Route, 'route')
       @group.routes = []
@@ -47,11 +58,6 @@ module Controllers
       end
       @group.save
       halt 200, {message: 'updated'}.to_json
-    end
-
-    declare_route 'delete', '/:id' do
-      @group.delete
-      halt 200, {message: 'deleted'}.to_json
     end
 
     def check_items(klass, singular)
