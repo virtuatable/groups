@@ -3,26 +3,28 @@ module Controllers
   # @author Vincent Courtois <courtois.vincent@outlook.com>
   class Groups < Arkaan::Utils::Controller
 
+    load_errors_from __FILE__
+
     ['/:id', '/:id/rights', '/:id/routes'].each do |path|
       before path do
         @group = Arkaan::Permissions::Group.where(id: params['id']).first
-        halt(404, {message: 'group_not_found'}.to_json) if @group.nil?
       end
     end
 
     # @see https://github.com/jdr-tools/groups/wiki/Creating-a-group
     declare_route 'post', '/' do
-      check_presence 'slug'
+      check_presence 'slug', route: 'creation'
       group = Arkaan::Permissions::Group.new(slug: params['slug'])
       if group.save
         halt 201, {message: 'created'}.to_json
       else
-        halt 422, {errors: group.errors.messages.values.flatten}.to_json
+        model_error(group, 'creation')
       end
     end
 
     # @see https://github.com/jdr-tools/groups/wiki/Deleting-a-group
     declare_route 'delete', '/:id' do
+      custom_error 404, 'deletion.group_id.unknown' if @group.nil?
       @group.delete
       halt 200, {message: 'deleted'}.to_json
     end
@@ -35,11 +37,13 @@ module Controllers
 
     # @see https://github.com/jdr-tools/groups/wiki/Obtaining-informations-about-a-group
     declare_route 'get', '/:id' do
+      custom_error 404, 'informations.group_id.unknown' if @group.nil?
       halt 200, Decorators::Group.new(@group).to_json
     end
 
     # @see https://github.com/jdr-tools/groups/wiki/Updating-the-rights-of-a-group
     declare_route 'patch', '/:id/rights' do
+      custom_error 404, 'rights.group_id.unknown' if @group.nil?
       check_items(Arkaan::Permissions::Right, 'right')
       @group.rights = []
       params['rights'].each do |right_id|
@@ -51,6 +55,7 @@ module Controllers
 
     # @see https://github.com/jdr-tools/groups/wiki/Updating-the-routes-of-a-group
     declare_route 'patch', '/:id/routes' do
+      custom_error 404, 'routes.group_id.unknown' if @group.nil?
       check_items(Arkaan::Monitoring::Route, 'route')
       @group.routes = []
       params['routes'].each do |route_id|
@@ -63,7 +68,7 @@ module Controllers
     def check_items(klass, singular)
       return if params["#{singular}s"].nil? || params["#{singular}s"].empty?
       params["#{singular}s"].each do |item|
-        halt 404, {message: "#{singular}_not_found", id: item}.to_json if klass.where(id: item).first.nil?
+        custom_error 404, "#{singular}s.#{singular}_id.unknown" if klass.where(id: item).first.nil?
       end
     end
   end

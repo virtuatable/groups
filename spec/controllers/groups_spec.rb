@@ -45,6 +45,7 @@ RSpec.describe Controllers::Groups do
 
     it_should_behave_like 'a route', 'get', '/'
   end
+
   describe 'GET /:id' do
     describe 'nominal case' do
       before do
@@ -74,13 +75,19 @@ RSpec.describe Controllers::Groups do
           expect(last_response.status).to be 404
         end
         it 'returns the correct body when the group doesn\'t exist' do
-          expect(JSON.parse(last_response.body)).to eq({'message' => 'group_not_found'})
+          expect(JSON.parse(last_response.body)).to eq({
+            'status' => 404,
+            'field' => 'group_id',
+            'error' => 'unknown',
+            'docs' => 'https://github.com/jdr-tools/wiki/wiki/Groups-API#group-id-not-found'
+          })
         end
       end
     end
   end
+
   describe 'POST /' do
-    describe 'in the nominal case' do
+    describe 'Nominal case' do
       before do
         post '/', {app_key: 'test_key', token: 'test_token', slug: 'test_other_right'}
       end
@@ -94,20 +101,24 @@ RSpec.describe Controllers::Groups do
 
     it_should_behave_like 'a route', 'post', '/'
 
-    describe 'unprocessable entity errors' do
+    describe 'Bad request errors' do
       describe 'already existing slug error' do
         before do
           post '/', {app_key: 'test_key', token: 'test_token', slug: 'test_group'}
         end
         it 'gives the correct status code when creating a right with an already existing slug' do
-          expect(last_response.status).to be 422
+          expect(last_response.status).to be 400
         end
         it 'returns the correct body when creating a right with an already existing slug' do
-          expect(JSON.parse(last_response.body)).to eq({'errors' => ['group.slug.uniq']})
+          expect(JSON.parse(last_response.body)).to eq({
+            'status' => 400,
+            'field' => 'slug',
+            'error' => 'uniq',
+            'docs' => 'https://github.com/jdr-tools/wiki/wiki/Groups-API#slug-already-taken'
+          })
         end
       end
-    end
-    describe 'bad request errors' do
+
       describe 'slug not given error' do
         before do
           post '/', {app_key: 'test_key', token: 'test_token'}
@@ -116,11 +127,17 @@ RSpec.describe Controllers::Groups do
           expect(last_response.status).to be 400
         end
         it 'returns the correct response if the parameters do not contain a slug' do
-          expect(JSON.parse(last_response.body)).to eq({'message' => 'missing.slug'})
+          expect(JSON.parse(last_response.body)).to eq({
+            'status' => 400,
+            'field' => 'slug',
+            'error' => 'required',
+            'docs' => 'https://github.com/jdr-tools/wiki/wiki/Groups-API#slug-not-given'
+          })
         end
       end
     end
   end
+
   describe 'PATCH /:id/rights' do
     describe 'nominal case' do
       let!(:other_group) { create(:other_group, slug: 'other_slug_group') }
@@ -161,7 +178,7 @@ RSpec.describe Controllers::Groups do
 
     it_should_behave_like 'a route', 'patch', '/group_id/rights'
 
-    describe 'not_found errors' do
+    describe 'Not Found errors' do
       describe 'group not found' do
         before do
           patch "/any_unknown_group/rights", {token: 'test_token', app_key: 'test_key', rights: []}
@@ -170,7 +187,12 @@ RSpec.describe Controllers::Groups do
           expect(last_response.status).to be 404
         end
         it 'returns the correct body if the group does not exist' do
-          expect(JSON.parse(last_response.body)).to eq({'message' => 'group_not_found'})
+          expect(JSON.parse(last_response.body)).to eq({
+            'status' => 404,
+            'field' => 'group_id',
+            'error' => 'unknown',
+            'docs' => 'https://github.com/jdr-tools/wiki/wiki/Groups-API#group-id-not-found-1'
+          })
         end
       end
       describe 'one of the rights has not been found' do
@@ -182,7 +204,12 @@ RSpec.describe Controllers::Groups do
           expect(last_response.status).to be 404
         end
         it 'returns the correct body if a right is not found' do
-          expect(JSON.parse(last_response.body)).to eq({'message' => 'right_not_found', 'id' => 'any_other_right'})
+          expect(JSON.parse(last_response.body)).to eq({
+            'status' => 404,
+            'field' => 'right_id',
+            'error' => 'unknown',
+            'docs' => 'https://github.com/jdr-tools/wiki/wiki/Groups-API#right-id-not-found'
+          })
         end
         it 'has not associated a right with the given group' do
           expect(other_group.rights.count).to be 0
@@ -229,9 +256,9 @@ RSpec.describe Controllers::Groups do
       end
     end
 
-    it_should_behave_like 'a route', 'patch', '/group_id/rights'
+    it_should_behave_like 'a route', 'patch', '/group_id/routes'
 
-    describe 'not_found errors' do
+    describe 'Not Found errors' do
       describe 'group not found' do
         before do
           patch "/any_unknown_group/routes", {token: 'test_token', app_key: 'test_key', routes: []}
@@ -240,7 +267,12 @@ RSpec.describe Controllers::Groups do
           expect(last_response.status).to be 404
         end
         it 'returns the correct body if the group does not exist' do
-          expect(JSON.parse(last_response.body)).to eq({'message' => 'group_not_found'})
+          expect(JSON.parse(last_response.body)).to eq({
+            'status' => 404,
+            'field' => 'group_id',
+            'error' => 'unknown',
+            'docs' => 'https://github.com/jdr-tools/wiki/wiki/Groups-API#group-id-not-found-2'
+          })
         end
       end
       describe 'one of the routes has not been found' do
@@ -252,7 +284,12 @@ RSpec.describe Controllers::Groups do
           expect(last_response.status).to be 404
         end
         it 'returns the correct body if a route is not found' do
-          expect(JSON.parse(last_response.body)).to eq({'message' => 'route_not_found', 'id' => 'any_other_route'})
+          expect(JSON.parse(last_response.body)).to eq({
+            'status' => 404,
+            'field' => 'route_id',
+            'error' => 'unknown',
+            'docs' => 'https://github.com/jdr-tools/wiki/wiki/Groups-API#route-id-not-found'
+          })
         end
         it 'has not associated a route with the given group' do
           expect(other_group.routes.count).to be 0
@@ -284,7 +321,12 @@ RSpec.describe Controllers::Groups do
           expect(last_response.status).to be 404
         end
         it 'returns the correct body when the group doesn\'t exist' do
-          expect(JSON.parse(last_response.body)).to eq({'message' => 'group_not_found'})
+          expect(JSON.parse(last_response.body)).to eq({
+            'status' => 404,
+            'field' => 'group_id',
+            'error' => 'unknown',
+            'docs' => 'https://github.com/jdr-tools/wiki/wiki/Groups-API#group-id-not-found-3'
+          })
         end
       end
     end

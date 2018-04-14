@@ -1,0 +1,31 @@
+errors:
+  common:
+    app_key:
+      forbidden: 'https://github.com/jdr-tools/wiki/wiki/Common-errors#application-not-premium'
+      required: 'https://github.com/jdr-tools/wiki/wiki/Common-errors#application-key-not-given'
+      unknown: 'https://github.com/jdr-tools/wiki/wiki/Common-errors#application-key-not-found'
+    token:
+      required: 'https://github.com/jdr-tools/wiki/wiki/Common-errors#gateway-token-not-given'
+      unknown: 'https://github.com/jdr-tools/wiki/wiki/Common-errors#gateway-token-not-found'
+  creation:
+    slug:
+      minlength: 'https://github.com/jdr-tools/wiki/wiki/Groups-API#slug-too-short'
+      pattern: 'https://github.com/jdr-tools/wiki/wiki/Groups-API#slug-with-wrong-format'
+      required: 'https://github.com/jdr-tools/wiki/wiki/Groups-API#slug-not-given'
+      uniq: 'https://github.com/jdr-tools/wiki/wiki/Groups-API#slug-already-taken'
+  deletion:
+    group_id:
+      unknown: 'https://github.com/jdr-tools/wiki/wiki/Groups-API#group-id-not-found-3'
+  informations:
+    group_id:
+      unknown: 'https://github.com/jdr-tools/wiki/wiki/Groups-API#group-id-not-found'
+  rights:
+    group_id:
+      unknown: 'https://github.com/jdr-tools/wiki/wiki/Groups-API#group-id-not-found-1'
+    right_id:
+      unknown: 'https://github.com/jdr-tools/wiki/wiki/Groups-API#right-id-not-found'
+  routes:
+    group_id:
+      unknown: 'https://github.com/jdr-tools/wiki/wiki/Groups-API#group-id-not-found-2'
+    route_id:
+      unknown: 'https://github.com/jdr-tools/wiki/wiki/Groups-API#route-id-not-found'
