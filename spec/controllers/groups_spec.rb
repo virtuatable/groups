@@ -35,6 +35,7 @@ RSpec.describe Controllers::Groups do
             {
               'id' => group.id.to_s,
               'slug' => 'test_group',
+              'is_default' => false,
               'rights' => 1,
               'routes' => 0
             }
@@ -58,6 +59,7 @@ RSpec.describe Controllers::Groups do
         expect(JSON.parse(last_response.body)).to eq({
           'id' => group.id.to_s,
           'slug' => 'test_group',
+          'is_default' => false,
           'rights' => [right.id.to_s],
           'routes' => []
         })
@@ -89,13 +91,65 @@ RSpec.describe Controllers::Groups do
   describe 'POST /' do
     describe 'Nominal case' do
       before do
-        post '/', {app_key: 'test_key', token: 'test_token', slug: 'test_other_right'}
+        post '/', {app_key: 'test_key', token: 'test_token', slug: 'other_group'}
       end
       it 'gives the correct status code when successfully creating a right' do
         expect(last_response.status).to be 201
       end
       it 'returns the correct body when the right is successfully created' do
         expect(JSON.parse(last_response.body)).to eq({'message' => 'created'})
+      end
+      describe 'created group attributes' do
+        let!(:created_group) { Arkaan::Permissions::Group.last }
+        it 'has the correct slug' do
+          expect(created_group.slug).to eq 'other_group'
+        end
+        it 'is not a default group' do
+          expect(created_group.is_default).to be false
+        end
+      end
+    end
+
+    describe 'Alternative cases' do
+      describe 'When the is_default flag is given to false' do
+        before do
+          post '/', {app_key: 'test_key', token: 'test_token', slug: 'other_group', is_default: false}
+        end
+        it 'returns a 201 (Created) status' do
+          expect(last_response.status).to be 201
+        end
+        it 'returns the correct body' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'created'})
+        end
+        describe 'created group attributes' do
+          let!(:created_group) { Arkaan::Permissions::Group.last }
+          it 'has the correct slug' do
+            expect(created_group.slug).to eq 'other_group'
+          end
+          it 'is not a default group' do
+            expect(created_group.is_default).to be false
+          end
+        end
+      end
+      describe 'When the is_default flag is given to true' do
+        before do
+          post '/', {app_key: 'test_key', token: 'test_token', slug: 'other_group', is_default: true}
+        end
+        it 'returns a 201 (Created) status' do
+          expect(last_response.status).to be 201
+        end
+        it 'returns the correct body' do
+          expect(JSON.parse(last_response.body)).to eq({'message' => 'created'})
+        end
+        describe 'created group attributes' do
+          let!(:created_group) { Arkaan::Permissions::Group.last }
+          it 'has the correct slug' do
+            expect(created_group.slug).to eq 'other_group'
+          end
+          it 'is a default group' do
+            expect(created_group.is_default).to be true
+          end
+        end
       end
     end
 
@@ -217,6 +271,7 @@ RSpec.describe Controllers::Groups do
       end
     end
   end
+
   describe 'PATCH /:id/routes' do
     let!(:route) { create(:route) }
 
@@ -297,6 +352,7 @@ RSpec.describe Controllers::Groups do
       end
     end
   end
+
   describe 'DELETE /:id' do
     describe 'nominal case' do
       before do

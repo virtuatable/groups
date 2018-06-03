@@ -14,7 +14,7 @@ module Controllers
     # @see https://github.com/jdr-tools/groups/wiki/Creating-a-group
     declare_route 'post', '/' do
       check_presence 'slug', route: 'creation'
-      group = Arkaan::Permissions::Group.new(slug: params['slug'])
+      group = Arkaan::Permissions::Group.new(slug: params['slug'], is_default: params['is_default'] || false)
       if group.save
         halt 201, {message: 'created'}.to_json
       else
