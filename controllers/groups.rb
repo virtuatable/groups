@@ -5,8 +5,8 @@ module Controllers
 
     load_errors_from __FILE__
 
-    ['/:id', '/:id/rights', '/:id/routes'].each do |path|
-      before path do
+    ['', '/rights', '/routes'].each do |path|
+      before "/groups/:id#{path}" do
         @group = Arkaan::Permissions::Group.where(id: params['id']).first
       end
     end

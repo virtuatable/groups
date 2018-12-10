@@ -23,7 +23,7 @@ RSpec.describe Controllers::Groups do
   describe 'GET /' do
     describe 'nominal case' do
       before do
-        get '/', {app_key: 'test_key', token: 'test_token'}
+        get '/groups', {app_key: 'test_key', token: 'test_token'}
       end
       it 'Returns a OK (200) status code when querying for the list of groups' do
         expect(last_response.status).to be 200
@@ -44,13 +44,13 @@ RSpec.describe Controllers::Groups do
       end
     end
 
-    it_should_behave_like 'a route', 'get', '/'
+    it_should_behave_like 'a route', 'get', '/groups'
   end
 
   describe 'GET /:id' do
     describe 'nominal case' do
       before do
-        get "/#{group.id}", {app_key: 'test_key', token: 'test_token'}
+        get "/groups/#{group.id}", {app_key: 'test_key', token: 'test_token'}
       end
       it 'Returns a OK (200) status code when querying for the list of groups' do
         expect(last_response.status).to be 200
@@ -66,12 +66,12 @@ RSpec.describe Controllers::Groups do
       end
     end
 
-    it_should_behave_like 'a route', 'get', '/group_id'
+    it_should_behave_like 'a route', 'get', '/groups/group_id'
 
     describe 'not_found errors' do
       describe 'group not found' do
         before do
-          get '/anything_but_existing_group', {app_key: 'test_key', token: 'test_token'}
+          get '/groups/anything_but_existing_group', {app_key: 'test_key', token: 'test_token'}
         end
         it 'Raises a not found (404) error when the group does not exist' do
           expect(last_response.status).to be 404
@@ -91,7 +91,7 @@ RSpec.describe Controllers::Groups do
   describe 'POST /' do
     describe 'Nominal case' do
       before do
-        post '/', {app_key: 'test_key', token: 'test_token', slug: 'other_group'}
+        post '/groups', {app_key: 'test_key', token: 'test_token', slug: 'other_group'}
       end
       it 'gives the correct status code when successfully creating a right' do
         expect(last_response.status).to be 201
@@ -113,7 +113,7 @@ RSpec.describe Controllers::Groups do
     describe 'Alternative cases' do
       describe 'When the is_default flag is given to false' do
         before do
-          post '/', {app_key: 'test_key', token: 'test_token', slug: 'other_group', is_default: false}
+          post '/groups', {app_key: 'test_key', token: 'test_token', slug: 'other_group', is_default: false}
         end
         it 'returns a 201 (Created) status' do
           expect(last_response.status).to be 201
@@ -133,7 +133,7 @@ RSpec.describe Controllers::Groups do
       end
       describe 'When the is_default flag is given to true' do
         before do
-          post '/', {app_key: 'test_key', token: 'test_token', slug: 'other_group', is_default: true}
+          post '/groups', {app_key: 'test_key', token: 'test_token', slug: 'other_group', is_default: true}
         end
         it 'returns a 201 (Created) status' do
           expect(last_response.status).to be 201
@@ -153,12 +153,12 @@ RSpec.describe Controllers::Groups do
       end
     end
 
-    it_should_behave_like 'a route', 'post', '/'
+    it_should_behave_like 'a route', 'post', '/groups'
 
     describe 'Bad request errors' do
       describe 'already existing slug error' do
         before do
-          post '/', {app_key: 'test_key', token: 'test_token', slug: 'test_group'}
+          post '/groups', {app_key: 'test_key', token: 'test_token', slug: 'test_group'}
         end
         it 'gives the correct status code when creating a right with an already existing slug' do
           expect(last_response.status).to be 400
@@ -175,7 +175,7 @@ RSpec.describe Controllers::Groups do
 
       describe 'slug not given error' do
         before do
-          post '/', {app_key: 'test_key', token: 'test_token'}
+          post '/groups', {app_key: 'test_key', token: 'test_token'}
         end
         it 'Raises a bad request (400) error when the parameters don\'t contain the slug' do
           expect(last_response.status).to be 400
@@ -197,7 +197,7 @@ RSpec.describe Controllers::Groups do
       let!(:other_group) { create(:other_group, slug: 'other_slug_group') }
       let!(:other_right) { create(:right, slug: 'other_slug_right', category: category) }
       before do
-        patch "/#{other_group.id.to_s}/rights", {token: 'test_token', app_key: 'test_key', rights: [right.id.to_s]}
+        patch "/groups/#{other_group.id.to_s}/rights", {token: 'test_token', app_key: 'test_key', rights: [right.id.to_s]}
       end
       it 'Returns a OK (200) response code if the right has successfully been appended to the group' do
         expect(last_response.status).to be 200
@@ -213,7 +213,7 @@ RSpec.describe Controllers::Groups do
       end
       describe 'overwriting the rights in a group' do
         before do
-          patch "/#{other_group.id.to_s}/rights", {token: 'test_token', app_key: 'test_key', rights: [other_right.id.to_s]}
+          patch "/groups/#{other_group.id.to_s}/rights", {token: 'test_token', app_key: 'test_key', rights: [other_right.id.to_s]}
         end
         it 'Returns a OK (200) response code when overwriting the rights' do
           expect(last_response.status).to be 200
@@ -230,12 +230,12 @@ RSpec.describe Controllers::Groups do
       end
     end
 
-    it_should_behave_like 'a route', 'patch', '/group_id/rights'
+    it_should_behave_like 'a route', 'patch', '/groups/group_id/rights'
 
     describe 'Not Found errors' do
       describe 'group not found' do
         before do
-          patch "/any_unknown_group/rights", {token: 'test_token', app_key: 'test_key', rights: []}
+          patch "/groups/any_unknown_group/rights", {token: 'test_token', app_key: 'test_key', rights: []}
         end
         it 'Raises a not found (404) error when the group does not exist' do
           expect(last_response.status).to be 404
@@ -252,7 +252,7 @@ RSpec.describe Controllers::Groups do
       describe 'one of the rights has not been found' do
         let!(:other_group) { create(:other_group, slug: 'other_slug_group') }
         before do
-          patch "/#{other_group.id.to_s}/rights", {token: 'test_token', app_key: 'test_key', rights: [right.id.to_s, 'any_other_right']}
+          patch "/groups/#{other_group.id.to_s}/rights", {token: 'test_token', app_key: 'test_key', rights: [right.id.to_s, 'any_other_right']}
         end
         it 'Raises a not found (404) error when a right unique identifier is not found' do
           expect(last_response.status).to be 404
@@ -278,7 +278,7 @@ RSpec.describe Controllers::Groups do
     describe 'nominal case' do
       let!(:other_group) { create(:other_group, slug: 'other_slug_group') }
       before do
-        patch "/#{other_group.id.to_s}/routes", {token: 'test_token', app_key: 'test_key', routes: [route.id.to_s]}
+        patch "/groups/#{other_group.id.to_s}/routes", {token: 'test_token', app_key: 'test_key', routes: [route.id.to_s]}
       end
       it 'Returns a OK (200) response code if the route has successfully been appended to the group' do
         expect(last_response.status).to be 200
@@ -294,7 +294,7 @@ RSpec.describe Controllers::Groups do
       end
       describe 'overwriting the rights in a group' do
         before do
-          patch "/#{other_group.id.to_s}/routes", {token: 'test_token', app_key: 'test_key', routes: [route.id.to_s]}
+          patch "/groups/#{other_group.id.to_s}/routes", {token: 'test_token', app_key: 'test_key', routes: [route.id.to_s]}
         end
         it 'Returns a OK (200) response code when overwriting the rights' do
           expect(last_response.status).to be 200
@@ -311,12 +311,12 @@ RSpec.describe Controllers::Groups do
       end
     end
 
-    it_should_behave_like 'a route', 'patch', '/group_id/routes'
+    it_should_behave_like 'a route', 'patch', '/groups/group_id/routes'
 
     describe 'Not Found errors' do
       describe 'group not found' do
         before do
-          patch "/any_unknown_group/routes", {token: 'test_token', app_key: 'test_key', routes: []}
+          patch "/groups/any_unknown_group/routes", {token: 'test_token', app_key: 'test_key', routes: []}
         end
         it 'Raises a not found (404) error when the group does not exist' do
           expect(last_response.status).to be 404
@@ -333,7 +333,7 @@ RSpec.describe Controllers::Groups do
       describe 'one of the routes has not been found' do
         let!(:other_group) { create(:other_group, slug: 'other_slug_group') }
         before do
-          patch "/#{other_group.id.to_s}/routes", {token: 'test_token', app_key: 'test_key', routes: [route.id.to_s, 'any_other_route']}
+          patch "/groups/#{other_group.id.to_s}/routes", {token: 'test_token', app_key: 'test_key', routes: [route.id.to_s, 'any_other_route']}
         end
         it 'Raises a not found (404) error when a route unique identifier is not found' do
           expect(last_response.status).to be 404
@@ -356,7 +356,7 @@ RSpec.describe Controllers::Groups do
   describe 'DELETE /:id' do
     describe 'nominal case' do
       before do
-        delete "/#{group.id}", {app_key: 'test_key', token: 'test_token'}
+        delete "/groups/#{group.id}", {app_key: 'test_key', token: 'test_token'}
       end
       it 'Returns a OK (200) status code when deleting a group' do
         expect(last_response.status).to be 200
@@ -366,12 +366,12 @@ RSpec.describe Controllers::Groups do
       end
     end
 
-    it_should_behave_like 'a route', 'delete', '/group_id'
+    it_should_behave_like 'a route', 'delete', '/groups/group_id'
 
     describe 'not_found errors' do
       describe 'group not found' do
         before do
-          delete '/anything_but_existing_group', {app_key: 'test_key', token: 'test_token'}
+          delete '/groups/anything_but_existing_group', {app_key: 'test_key', token: 'test_token'}
         end
         it 'Raises a not found (404) error when the group does not exist' do
           expect(last_response.status).to be 404
