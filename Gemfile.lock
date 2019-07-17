@@ -134,6 +134,7 @@ GEM
     rspec-expectations (3.6.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.6.0)
+    rspec-json_expectations (2.1.0)
     rspec-mocks (3.6.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.6.0)
@@ -190,6 +191,7 @@ DEPENDENCIES
   rack-test (= 0.7.0)
   rake
   rspec (= 3.6.0)
+  rspec-json_expectations (= 2.1.0)
   rubocop
   simplecov (= 0.15.1)
   sinatra (= 2.0.1)

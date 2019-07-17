@@ -97,7 +97,15 @@ RSpec.describe Controllers::Groups do
         expect(last_response.status).to be 201
       end
       it 'returns the correct body when the right is successfully created' do
-        expect(JSON.parse(last_response.body)).to eq({'message' => 'created'})
+        expect(last_response.body).to include_json({
+          message: 'created',
+          item: {
+            slug: 'other_group',
+            is_default: false,
+            rights: 0,
+            routes: 0
+          }
+        })
       end
       describe 'created group attributes' do
         let!(:created_group) { Arkaan::Permissions::Group.last }
@@ -119,7 +127,15 @@ RSpec.describe Controllers::Groups do
           expect(last_response.status).to be 201
         end
         it 'returns the correct body' do
-          expect(JSON.parse(last_response.body)).to eq({'message' => 'created'})
+          expect(last_response.body).to include_json({
+            message: 'created',
+            item: {
+              slug: 'other_group',
+              is_default: false,
+              routes: 0,
+              rights: 0
+            }
+          })
         end
         describe 'created group attributes' do
           let!(:created_group) { Arkaan::Permissions::Group.last }
@@ -139,7 +155,15 @@ RSpec.describe Controllers::Groups do
           expect(last_response.status).to be 201
         end
         it 'returns the correct body' do
-          expect(JSON.parse(last_response.body)).to eq({'message' => 'created'})
+          expect(last_response.body).to include_json({
+            message: 'created',
+            item: {
+              slug: 'other_group',
+              is_default: true,
+              routes: 0,
+              rights: 0
+            }
+          })
         end
         describe 'created group attributes' do
           let!(:created_group) { Arkaan::Permissions::Group.last }

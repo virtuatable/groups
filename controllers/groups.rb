@@ -16,7 +16,8 @@ module Controllers
       check_presence 'slug', route: 'creation'
       group = Arkaan::Permissions::Group.new(slug: params['slug'], is_default: params['is_default'] || false)
       if group.save
-        halt 201, {message: 'created'}.to_json
+        item = Decorators::Group.new(group).to_h
+        halt 201, {message: 'created', item: item}.to_json
       else
         model_error(group, 'creation')
       end
