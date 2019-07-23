@@ -1,7 +1,7 @@
 module Controllers
   # Controller for the rights, mapped on /rights
   # @author Vincent Courtois <courtois.vincent@outlook.com>
-  class Groups < Arkaan::Utils::Controller
+  class Groups < Arkaan::Utils::Controllers::Checked
 
     load_errors_from __FILE__
 
