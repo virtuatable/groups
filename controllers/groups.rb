@@ -42,34 +42,34 @@ module Controllers
       halt 200, Decorators::Group.new(@group).to_json
     end
 
-    # @see https://github.com/jdr-tools/groups/wiki/Updating-the-rights-of-a-group
-    declare_route 'patch', '/:id/rights' do
-      custom_error 404, 'rights.group_id.unknown' if @group.nil?
-      check_items(Arkaan::Permissions::Right, 'right')
-      @group.rights = []
-      params['rights'].each do |right_id|
-        @group.rights << Arkaan::Permissions::Right.where(id: right_id).first
-      end
-      @group.save
-      halt 200, {message: 'updated'}.to_json
-    end
-
-    # @see https://github.com/jdr-tools/groups/wiki/Updating-the-routes-of-a-group
-    declare_route 'patch', '/:id/routes' do
+    declare_route 'put', '/:id' do
       custom_error 404, 'routes.group_id.unknown' if @group.nil?
-      check_items(Arkaan::Monitoring::Route, 'route')
-      @group.routes = []
-      params['routes'].each do |route_id|
-        @group.routes << Arkaan::Monitoring::Route.where(id: route_id).first
-      end
-      @group.save
-      halt 200, {message: 'updated'}.to_json
+      update_fields('slug', 'is_default')
+      update_association('routes', Arkaan::Monitoring::Route)
+      update_association('rights', Arkaan::Permissions::Right)
+      halt 200, {message: 'updated', item: Decorators::Group.new(@group).to_h}.to_json
     end
 
-    def check_items(klass, singular)
-      return if params["#{singular}s"].nil? || params["#{singular}s"].empty?
-      params["#{singular}s"].each do |item|
-        custom_error 404, "#{singular}s.#{singular}_id.unknown" if klass.where(id: item).first.nil?
+    def update_association(association, klass)
+      if params.has_key? association
+        check_items(klass, association)
+        mapped = params[association].map { |id| klass.find(id) }
+        @group.send("#{association}=", mapped)
+        @group.save
+      end
+    end
+
+    def update_fields(*fields)
+      fields.each do |field|
+        @group.update_attribute(field, params[field]) if params.has_key? field
+      end
+    end
+
+    def check_items(klass, association)
+      singular = association.delete_suffix('s')
+      return if params[association].nil? || params[association].empty?
+      params[association].each do |item|
+        custom_error 404, "#{association}.#{singular}_id.unknown" if klass.where(id: item).first.nil?
       end
     end
   end
