@@ -11,6 +11,8 @@ module Controllers
       end
     end
 
+    declare_status_route
+
     # @see https://github.com/jdr-tools/groups/wiki/Creating-a-group
     declare_route 'post', '/' do
       check_presence 'slug', route: 'creation'
