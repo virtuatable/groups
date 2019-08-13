@@ -7,6 +7,7 @@ module Controllers
 
     ['', '/rights', '/routes'].each do |path|
       before "/groups/:id#{path}" do
+        pass if route_is_diagnostic?
         @group = Arkaan::Permissions::Group.where(id: params['id']).first
       end
     end
