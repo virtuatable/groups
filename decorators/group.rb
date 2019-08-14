@@ -1,24 +1,28 @@
+# frozen_string_literal: true
+
 module Decorators
+  # Decorator for a group, wrapping its attributes
+  # @author Vincent Courtois <courtois.vincent@outlook.com>
   class Group < Draper::Decorator
     delegate_all
 
     def to_h
-      return {
-        id: object.id.to_s,
-        slug: object.slug,
-        is_default: object.is_default,
-        rights: object.rights.count,
-        routes: object.routes.count
+      {
+        id: id.to_s,
+        slug: slug,
+        is_default: is_default,
+        rights: rights.count,
+        routes: routes.count
       }
     end
 
-    def to_json
-      return {
-        id: object.id.to_s,
-        slug: object.slug,
-        is_default: object.is_default,
-        rights: object.rights.map(&:id).map(&:to_s),
-        routes: object.routes.map(&:id).map(&:to_s)
+    def to_json(*_args)
+      {
+        id: id.to_s,
+        slug: slug,
+        is_default: is_default,
+        rights: rights.map(&:id).map(&:to_s),
+        routes: routes.map(&:id).map(&:to_s)
       }.to_json
     end
   end
